@@ -74,8 +74,18 @@ const LOGIN_WINDOW_MS = 15 * 60 * 1000; // failures older than this don't count
 const LOGIN_LOCKOUT_MS = 5 * 60 * 1000; // lockout duration once max attempts hit
 
 function getClientIp(req) {
+  // Render sites are fronted by Cloudflare, which strips any client-supplied
+  // CF-Connecting-IP and always overwrites it with the real connecting IP —
+  // that makes it trustworthy, unlike X-Forwarded-For, whose leftmost entry
+  // is whatever the client sent and can be freely spoofed to bypass rate
+  // limits (e.g. `curl -H "X-Forwarded-For: 1.2.3.4"`).
+  const cfIp = req.headers['cf-connecting-ip'];
+  if (cfIp) return cfIp.trim();
   const fwd = req.headers['x-forwarded-for'];
-  if (fwd) return fwd.split(',')[0].trim();
+  if (fwd) {
+    const parts = fwd.split(',').map(s => s.trim());
+    return parts[parts.length - 1];
+  }
   return req.socket.remoteAddress;
 }
 
