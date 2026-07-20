@@ -1,0 +1,224 @@
+:root {
+  --blue: #1c5d99;
+  --blue-dark: #123f6b;
+  --bg: #f4f7fb;
+  --border: #d9e2ec;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --green: #1b8a5a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+header.hero {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+header.hero h1 {
+  font-size: 1.9rem;
+  color: var(--blue-dark);
+  margin-bottom: 8px;
+}
+
+header.hero p {
+  color: var(--muted);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
+}
+
+.hint {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(28,93,153,0.15);
+}
+
+.row {
+  display: flex;
+  gap: 14px;
+}
+.row .field { flex: 1; }
+
+.consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #f0f5fb;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 22px;
+}
+.consent input { margin-top: 4px; }
+.consent label { font-weight: 400; font-size: 0.85rem; color: var(--text); }
+
+button.submit {
+  width: 100%;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button.submit:hover { background: var(--blue-dark); }
+
+.success, .error {
+  text-align: center;
+  padding: 40px 20px;
+}
+.success h2 { color: var(--green); }
+.error h2 { color: #b91c1c; }
+
+footer.disclosure {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin-top: 20px;
+  line-height: 1.5;
+}
+
+/* Dashboard */
+.dash-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.dash-header h1 { color: var(--blue-dark); margin: 0; font-size: 1.5rem; }
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.toolbar select, .toolbar input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.toolbar a.btn, button.btn {
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.88rem;
+}
+th, td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+th {
+  background: #eef3f9;
+  color: var(--blue-dark);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+tr:hover td { background: #f9fbfd; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge.New { background: #dbeafe; color: #1e40af; }
+.badge.Called { background: #fef3c7; color: #92400e; }
+.badge.Interested { background: #dcfce7; color: #166534; }
+.badge.NotInterested { background: #fee2e2; color: #991b1b; }
+.call-link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+.status-select {
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.count-pill {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
