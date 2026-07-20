@@ -330,7 +330,11 @@ document.querySelectorAll('.status-select').forEach(sel => {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const { pathname } = url;
+  // Normalize a trailing slash so exact-match routes (like '/dashboard') can't
+  // be dodged by requesting '/dashboard/' — that variant used to fall through
+  // to unauthenticated static-file serving instead of hitting requireAuth.
+  let pathname = url.pathname;
+  if (pathname.length > 1 && pathname.endsWith('/')) pathname = pathname.slice(0, -1);
 
   try {
     if (req.method === 'POST' && pathname === '/api/leads') {
