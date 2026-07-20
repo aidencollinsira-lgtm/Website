@@ -55,8 +55,45 @@ function checkAuth(req) {
   return user === DASH_USER && pass === DASH_PASS;
 }
 
+// In-memory brute-force guard for the dashboard login, keyed by client IP.
+const LOGIN_ATTEMPTS = new Map(); // ip -> { count, firstFailure, lockedUntil }
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000; // failures older than this don't count
+const LOGIN_LOCKOUT_MS = 5 * 60 * 1000; // lockout duration once max attempts hit
+
+function getClientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.socket.remoteAddress;
+}
+
 function requireAuth(req, res) {
-  if (checkAuth(req)) return true;
+  const ip = getClientIp(req);
+  const entry = LOGIN_ATTEMPTS.get(ip);
+  const now = Date.now();
+
+  if (entry && entry.lockedUntil > now) {
+    res.writeHead(429, {
+      'Retry-After': String(Math.ceil((entry.lockedUntil - now) / 1000)),
+      'Content-Type': 'text/plain'
+    });
+    res.end('Too many failed login attempts. Try again later.');
+    return false;
+  }
+
+  if (checkAuth(req)) {
+    LOGIN_ATTEMPTS.delete(ip);
+    return true;
+  }
+
+  if (!entry || now - entry.firstFailure > LOGIN_WINDOW_MS) {
+    LOGIN_ATTEMPTS.set(ip, { count: 1, firstFailure: now, lockedUntil: 0 });
+  } else {
+    entry.count += 1;
+    if (entry.count >= LOGIN_MAX_ATTEMPTS) entry.lockedUntil = now + LOGIN_LOCKOUT_MS;
+    LOGIN_ATTEMPTS.set(ip, entry);
+  }
+
   res.writeHead(401, {
     'WWW-Authenticate': 'Basic realm="ALC Insurance Group Dashboard"',
     'Content-Type': 'text/plain'
