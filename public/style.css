@@ -97,6 +97,13 @@ input:focus, select:focus {
   display: flex;
   gap: 14px;
 }
+
+@media (max-width: 520px) {
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
 .row .field { flex: 1; }
 
 .consent {

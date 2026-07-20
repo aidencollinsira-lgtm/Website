@@ -8,8 +8,13 @@ const { URL } = require('url');
 const store = require('./store');
 
 const PORT = process.env.PORT || 3000;
-const DASH_USER = process.env.DASHBOARD_USER || 'admin';
-const DASH_PASS = process.env.DASHBOARD_PASSWORD || 'changeme123';
+const DASH_USER = process.env.DASHBOARD_USER;
+const DASH_PASS = process.env.DASHBOARD_PASSWORD;
+
+if (!DASH_USER || !DASH_PASS) {
+  console.error('DASHBOARD_USER and DASHBOARD_PASSWORD environment variables must both be set. Refusing to start with no or default credentials.');
+  process.exit(1);
+}
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const STATUSES = ['New', 'Called', 'Interested', 'NotInterested'];
@@ -21,8 +26,15 @@ const MIME = {
   '.js': 'application/javascript; charset=utf-8'
 };
 
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'"
+};
+
 function send(res, status, body, headers = {}) {
-  res.writeHead(status, headers);
+  res.writeHead(status, { ...SECURITY_HEADERS, ...headers });
   res.end(body);
 }
 
@@ -67,6 +79,22 @@ function getClientIp(req) {
   return req.socket.remoteAddress;
 }
 
+// In-memory rate limit for public lead submissions, to blunt bot/spam flooding.
+const SUBMIT_ATTEMPTS = new Map(); // ip -> { count, windowStart }
+const SUBMIT_MAX = 8;
+const SUBMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function isSubmitRateLimited(ip) {
+  const now = Date.now();
+  const entry = SUBMIT_ATTEMPTS.get(ip);
+  if (!entry || now - entry.windowStart > SUBMIT_WINDOW_MS) {
+    SUBMIT_ATTEMPTS.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > SUBMIT_MAX;
+}
+
 function requireAuth(req, res) {
   const ip = getClientIp(req);
   const entry = LOGIN_ATTEMPTS.get(ip);
@@ -74,6 +102,7 @@ function requireAuth(req, res) {
 
   if (entry && entry.lockedUntil > now) {
     res.writeHead(429, {
+      ...SECURITY_HEADERS,
       'Retry-After': String(Math.ceil((entry.lockedUntil - now) / 1000)),
       'Content-Type': 'text/plain'
     });
@@ -95,6 +124,7 @@ function requireAuth(req, res) {
   }
 
   res.writeHead(401, {
+    ...SECURITY_HEADERS,
     'WWW-Authenticate': 'Basic realm="ALC Insurance Group Dashboard"',
     'Content-Type': 'text/plain'
   });
@@ -113,7 +143,10 @@ function escapeHtml(str) {
 
 function csvEscape(val) {
   if (val === null || val === undefined) return '';
-  const s = String(val);
+  let s = String(val);
+  // Neutralize spreadsheet formula injection (CWE-1236): a leading =, +, -, or @
+  // would otherwise be interpreted as a formula when the CSV is opened in Excel/Sheets.
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
   if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
   return s;
 }
@@ -132,6 +165,10 @@ function serveStatic(req, res, pathname) {
 }
 
 async function handleCreateLead(req, res) {
+  if (isSubmitRateLimited(getClientIp(req))) {
+    return sendJson(res, 429, { error: 'Too many submissions from this address. Please try again later.' });
+  }
+
   let body;
   try {
     body = JSON.parse(await readBody(req));
