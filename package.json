@@ -1,0 +1,10 @@
+{
+  "name": "insurance-leads-site",
+  "version": "1.0.0",
+  "description": "Public health insurance interest form + private dashboard for reviewing leads",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
