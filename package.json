@@ -1,7 +1,7 @@
 {
-  "name": "insurance-leads-site",
+  "name": "alc-insurance-group",
   "version": "1.0.0",
-  "description": "Public health insurance interest form + private dashboard for reviewing leads",
+  "description": "ALC Insurance Group public health insurance interest form + private dashboard for reviewing leads",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

@@ -29,6 +29,15 @@ header.hero {
   margin-bottom: 32px;
 }
 
+header.hero .brand {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 4px;
+}
+
 header.hero h1 {
   font-size: 1.9rem;
   color: var(--blue-dark);

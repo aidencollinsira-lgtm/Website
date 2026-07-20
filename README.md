@@ -1,4 +1,4 @@
-# Insurance Leads Site
+# ALC Insurance Group
 
 A public lead-capture form for health insurance shoppers, plus a private, password-protected
 dashboard for reviewing and calling leads.

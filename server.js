@@ -58,7 +58,7 @@ function checkAuth(req) {
 function requireAuth(req, res) {
   if (checkAuth(req)) return true;
   res.writeHead(401, {
-    'WWW-Authenticate': 'Basic realm="Insurance Leads Dashboard"',
+    'WWW-Authenticate': 'Basic realm="ALC Insurance Group Dashboard"',
     'Content-Type': 'text/plain'
   });
   res.end('Authentication required');
@@ -182,13 +182,13 @@ function renderDashboard(leads, filters) {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Leads Dashboard</title>
+<title>ALC Insurance Group | Leads Dashboard</title>
 <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 <div class="dash-wrap">
   <div class="dash-header">
-    <h1>Insurance Leads Dashboard</h1>
+    <h1>ALC Insurance Group Dashboard</h1>
     <span class="count-pill">${leads.length} lead${leads.length === 1 ? '' : 's'}</span>
   </div>
 
