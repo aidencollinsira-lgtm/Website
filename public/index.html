@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Get a Free Health Insurance Quote</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>Find the Right Health Insurance Plan</h1>
+    <p>Tell us a bit about your needs and a licensed agent will call you with a free, no-obligation quote.</p>
+  </header>
+
+  <div class="card">
+    <form id="lead-form">
+      <div class="row">
+        <div class="field">
+          <label for="full_name">Full name</label>
+          <input type="text" id="full_name" name="full_name" required />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input type="tel" id="phone" name="phone" placeholder="(555) 555-5555" required />
+        </div>
+        <div class="field">
+          <label for="email">Email <span class="hint">(optional)</span></label>
+          <input type="email" id="email" name="email" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="zip_code">ZIP code</label>
+          <input type="text" id="zip_code" name="zip_code" maxlength="10" required />
+        </div>
+        <div class="field">
+          <label for="age_range">Age range</label>
+          <select id="age_range" name="age_range">
+            <option value="">Select...</option>
+            <option>Under 18</option>
+            <option>18-25</option>
+            <option>26-34</option>
+            <option>35-44</option>
+            <option>45-54</option>
+            <option>55-64</option>
+            <option>65+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="coverage_type">Coverage interested in</label>
+          <select id="coverage_type" name="coverage_type">
+            <option value="">Select...</option>
+            <option>Individual / Family Health</option>
+            <option>Medicare</option>
+            <option>Medicaid</option>
+            <option>Short-Term Health</option>
+            <option>Dental</option>
+            <option>Vision</option>
+            <option>Life Insurance</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="current_insurance_status">Current coverage status</label>
+          <select id="current_insurance_status" name="current_insurance_status">
+            <option value="">Select...</option>
+            <option>Currently uninsured</option>
+            <option>Have coverage, shopping to switch</option>
+            <option>Losing coverage soon (job change, COBRA, etc.)</option>
+            <option>Covered by employer</option>
+            <option>Covered by Medicare/Medicaid</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="household_size">Household size</label>
+          <select id="household_size" name="household_size">
+            <option value="">Select...</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="best_day_to_call">Best day to call</label>
+          <select id="best_day_to_call" name="best_day_to_call">
+            <option value="">No preference</option>
+            <option>Weekdays</option>
+            <option>Weekends</option>
+            <option>Any day</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="best_time_to_call">Best time to call</label>
+          <select id="best_time_to_call" name="best_time_to_call">
+            <option value="">No preference</option>
+            <option>Morning (8am-11am)</option>
+            <option>Midday (11am-2pm)</option>
+            <option>Afternoon (2pm-5pm)</option>
+            <option>Evening (5pm-8pm)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="consent">
+        <input type="checkbox" id="consent_given" name="consent_given" required />
+        <label for="consent_given">
+          By checking this box and submitting this form, I agree to be contacted by phone, text, or email
+          by a licensed insurance agent about health insurance options, including by automated dialing or
+          texting technology. Consent is not a condition of purchase. Message/data rates may apply. I can
+          opt out at any time. See our <a href="#" id="privacy-link">Privacy Policy</a> for details.
+        </label>
+      </div>
+
+      <button type="submit" class="submit">Get My Free Quote</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <footer class="disclosure">
+    This is not an offer of insurance. Submitting this form connects you with a licensed agent who may
+    contact you about plans and pricing available in your area. Availability of plans varies by state and eligibility.
+  </footer>
+</div>
+
+<script>
+const form = document.getElementById('lead-form');
+const card = document.querySelector('.card');
+const resultBox = document.getElementById('result');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting...';
+
+  const data = Object.fromEntries(new FormData(form).entries());
+  data.consent_given = !!data.consent_given;
+
+  try {
+    const res = await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Something went wrong');
+
+    card.innerHTML = `
+      <div class="success">
+        <h2>Thanks, ${escapeHtml(data.full_name.split(' ')[0] || '')}!</h2>
+        <p>We've got your info. A licensed agent will reach out to you soon at the number you provided.</p>
+      </div>`;
+  } catch (err) {
+    resultBox.innerHTML = `<p style="color:#b91c1c; text-align:center; margin-top:14px;">${escapeHtml(err.message)}</p>`;
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Get My Free Quote';
+  }
+});
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
